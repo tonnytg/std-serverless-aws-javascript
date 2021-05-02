@@ -1,6 +1,6 @@
 'use strict';
 
-const { promises: { readFile }} = require('fs');
+const { get } = require('axios');
 
 class Handler {
     constructor({ rekoSvc, translatorSvc }) {
@@ -48,12 +48,23 @@ class Handler {
         }
         return finalText.join('\n')
     }
-
-    async main () {
+    async getImageBuffer(imageUrl) {
+        const response = await get(imageUrl, {
+            responseType: 'arraybuffer'
+        })
+        const buffer = Buffer.from(response.data, 'base64')
+        return buffer
+    }
+    async main (event) {
         try {
-            const imgBuffer = await readFile('./images/blackcats.jpeg')
+            const { imageUrl } = event.queryStringParameters
+            // const imgBuffer = await readFile('./images/blackcats.jpeg') // Get image from file (imgBuffer)
+            console.log("Downloading Image...")
+            const buffer = await this.getImageBuffer(imageUrl)
+
+            const objectGet = buffer // What do you want work? buffer or imgBuffer
             console.log('Detecting labels...')
-            const {names, workingItems} = await this.detectImageLabels(imgBuffer)
+            const {names, workingItems} = await this.detectImageLabels(objectGet)
 
             console.log("names", names)
             console.log("Items", workingItems)
