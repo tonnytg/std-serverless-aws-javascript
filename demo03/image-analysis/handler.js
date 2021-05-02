@@ -32,20 +32,21 @@ class Handler {
             TargetLanguageCode: 'pt',
             Text: text
         }
-        const result = await this.translatorSvc.translateText(params).promise()
-        console.log(JSON.stringify(result))
+        const { TranslatedText } = await this.translatorSvc.translateText(params).promise()
+        // console.log(JSON.stringify(result))
+        return TranslatedText.split(' e ')
     }
 
     formatTextResult(texts, workingItems) {
-        const finalText = []
+        let finalText = []
         for (const indexText in texts) {
             const nameInPortuguese = texts[indexText]
-            const confidence = workingItems[indexText]
+            const confidence = workingItems[indexText].Confidence
             finalText.push(
-                `${confidence.toFixed(2)}% de ser do tipo ${nameInPortuguese}`
+                `${ confidence.toFixed(2) }% de ser do tipo ${nameInPortuguese}`
             )
         }
-        return finalText
+        return finalText.join('\n')
     }
 
     async main () {
@@ -53,6 +54,9 @@ class Handler {
             const imgBuffer = await readFile('./images/blackcats.jpeg')
             console.log('Detecting labels...')
             const {names, workingItems} = await this.detectImageLabels(imgBuffer)
+
+            console.log("names", names)
+            console.log("Items", workingItems)
 
             console.log('Translating to Portuguese...')
             const texts = await this.translateText(names)
